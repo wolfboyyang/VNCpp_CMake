@@ -1,0 +1,89 @@
+The source code of this project is under the following license.
+
+Copyright 2013 Oscar Crespo Salazar
+Copyright 2013 Gorka Jimeno Garrachon
+Copyright 2013 Luis Valero Martin
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or 
+any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+----------------------------------------------------------------------
+The documentantion is under a Cretive Commons Attribution-ShareAlike license: http://creativecommons.org/licenses/by/3.0/deed.en
+
+The VNCpp logo under the following license:
+
+Copyright 2013 Sergio Barrasa Bazaga
+
+The VNCpp logo is under a Cretive Commons Attribution-ShareAlike license: http://creativecommons.org/licenses/by/3.0/deed.en
+----------------------------------------------------------------------
+
+This project contain software from the libVNCserver:
+
+libVNCserver: http://libvncserver.sourceforge.net/
+
+Copyright (C) 2001-2003 Johannes E. Schindelin
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.dfdf
+
+----------------------------------------------------------------------
+
+This project contain software from the slidingmenu:
+
+slidingmenu https://github.com/jfeinstein10/SlidingMenu
+
+Copyright 2012 Jeremy Feinstein
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+----------------------------------------------------------------------
+
+This project contains code from Android Developers: http://developer.android.com/index.html
+
+Copyright 2011 The Android Open Source Project.
+
+License under the Apache License 2.0 : http://www.apache.org/licenses/LICENSE-2.0
+
+----------------------------------------------------------------------
+
+Icons of the app is property of Android Open Source Project: http://source.android.com/ and it is under Creative Commons 2.5 Attribution License. 
+
+----------------------------------------------------------------------
+
+This software use icons, it is property of Android Open Source Project: http://source.android.com/ and it is under Creative Commons 2.5 Attribution License. 
+this project reproduced from work created and shared by the Android Open Source Project and used according to terms described in the Creative Commons 2.5 Attribution License. 
+
+The icon ic_action_overflow.png are modifications based on work created and shared by the Android Open Source Project and used according to terms described in the Creative Commons 2.5 Attribution License. 
+
+
+
