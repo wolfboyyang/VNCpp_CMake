@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string-array name="keys_array">
+    <string-array name="keys_array" translatable="false">
         <item>ctrl</item>
         <item>alt</item>
         <item>supr</item>

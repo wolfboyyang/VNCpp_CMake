@@ -27,7 +27,7 @@
 
     <!-- IMAGE TEXT -->
 
-    <string name="image_example">Image example</string>
+    <string name="image_example" translatable="false">Image example</string>
 
 
     <!-- Cabeceras de Action Bar -->
@@ -66,6 +66,7 @@
     <string name="invalidIp">Invalid IP</string>
     <string name="invalidPort">Invalid PORT</string>
     <string name="invalidName">Invalid Connection Name(in use)</string>
+    <string name="invalidUserOrPass">Invalid User Or Password</string>
 
     <!-- MENU CANVAS OPTIONS DIALOG -->
 

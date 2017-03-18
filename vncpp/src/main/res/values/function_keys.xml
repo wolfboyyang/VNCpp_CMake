@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string-array name="function_keys_array">
+    <string-array name="function_keys_array" translatable="false">
         <item>F1</item>
         <item>F2</item>
         <item>F3</item>
