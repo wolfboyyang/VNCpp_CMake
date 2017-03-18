@@ -1,0 +1,19 @@
+language: android
+android:
+  components:
+  - tools
+  - tools
+  - platform-tools
+  - android-25
+  - build-tools-25.0.0
+  - extra
+script:
+- "./gradlew clean build"
+after_success: "./scripts/travis_upload_release_to_github.py"
+deploy:
+  provider: releases
+  api_key:
+    secure: s/p4ksvyuG5lZ8z3Co6zh4mkCmlyUZ9rrpiHyVKkRMdPqOl+RdL77SKwDG2G/GoWpizovVAMVZpKZmYv8832f72ktPBB2eazYYsuDdClxGVfIgC+jT9ou2JeNz+UXUHGMU6D7Lj8mPbryMd/wYm2h+HZJZ9t+IQR4DZOwNoPcDktM2sxZpOSC+IVX8MQLiveZ4cLsM5apW3tTeneDcAc3HzHTBNscmXubDXFxK5HrM0QGAz3Oxc45N+JnpSqlWgWoaDGVbwq5Pk2YdfychTCyb42MnC6/mo3rnsV/li/78n4nIyFn9IaVKIETby6TBUVeWLa/e8tNIJC8fAXI2WWCvHWdqPKZDdTtqwDI3mieGt+qeI1ohSkoFswNKrcjtYGn8smqlzfCO+QreIg1wbF35pdxVFdfKIe2JdfzYE0P4z/hA4iXrt+UXkjVHaVJiTXpbhIAlr4Gaa5FZWnA/xt0IrKjKGnHXjifnzS99NfnSs/Pw57Rmu46swOJ1wUxzt3Wt0CzhCHNTXWHj8Tq+IBNCdaHIYMlwlSSb+h0uUBO74JTJEBwBulF+KgEIUR4g+ja+cPhv1yol6CicZqJXLgkkXvjlDxkZDigbmHrHnwiHe/q8E6XuZCjGVCPbpUlrbo2060K/eixTLu8Mtk0onIxzgNWN9jXBTqSDbwIUaRqYQ=
+  file: vncpp/build/outputs/apk/vncpp-release.apk
+  on:
+    repo: youi1987/VNCpp_CMake
