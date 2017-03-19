@@ -7,17 +7,12 @@ android:
   - android-25
   - build-tools-25.0.2
   - extra
-  
 jdk: oraclejdk8
-
 before_script:
-  - chmod +x gradlew
-  
+- chmod +x gradlew
 script:
-  - "./gradlew clean build"
-  
+- "./gradlew assembleRelease"
 after_success: "./scripts/travis_upload_release_to_github.py"
-
 deploy:
   provider: releases
   api_key:
@@ -25,3 +20,6 @@ deploy:
   file: vncpp/build/outputs/apk/vncpp-release.apk
   on:
     repo: youi1987/VNCpp_CMake
+before_install:
+- openssl aes-256-cbc -K $encrypted_4f12bca9e426_key -iv $encrypted_4f12bca9e426_iv
+  -in vncpp_cmake.jks.enc -out vncpp_cmake.jks -d
