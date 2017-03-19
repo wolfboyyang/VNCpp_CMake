@@ -7,11 +7,17 @@ android:
   - android-25
   - build-tools-25.0.0
   - extra
+  
+jdk: oraclejdk8
+
 before_script:
   - chmod +x gradlew
+  
 script:
   - "./gradlew clean build"
+  
 after_success: "./scripts/travis_upload_release_to_github.py"
+
 deploy:
   provider: releases
   api_key:
