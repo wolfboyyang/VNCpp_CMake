@@ -25,6 +25,7 @@ set(CMAKE_VERBOSE_MAKEFILE on)
 set(vncmain_lib-DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 set(vncmain_src-DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(vncmain_include-DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
+set(libvnc_sr-DIR ${CMAKE_CURRENT_SOURCE_DIR}/libvnc)
 
 add_library(lib-nettle STATIC IMPORTED)
 set_target_properties(lib-nettle PROPERTIES IMPORTED_LOCATION
@@ -83,15 +84,6 @@ add_dependencies( # Specifies the target library.
                   lib-tasn1
                   lib-nettle
                   lib-hogweed
-                  #lib-gnutls_ext
-                  #lib-miniopencdk
-                  #lib-openpgp
-                  #lib-minitasn1
-                  #lib-gnutls_auth
-                  #lib-gnutls_alg
-                  #lib-accelerated
-                  #lib-gnutlsxx
-                  #lib-crypto
                   )
 
 add_library(lib-gpg-error STATIC IMPORTED)
@@ -111,11 +103,42 @@ add_library(lib-jpeg STATIC IMPORTED)
 set_target_properties(lib-jpeg PROPERTIES IMPORTED_LOCATION
     ${vncmain_lib-DIR}/libjpeg.a)
 
-add_library(lib-vncclient STATIC IMPORTED)
-set_target_properties(lib-vncclient PROPERTIES IMPORTED_LOCATION
-    ${vncmain_lib-DIR}/libvncclient.a)
+add_library(lib-vncclient STATIC
+            ${libvnc_sr-DIR}/common/minilzo.c
+            ${libvnc_sr-DIR}/libvncclient/tls_none.c
+            ${libvnc_sr-DIR}/libvncclient/cursor.c
+            ${libvnc_sr-DIR}/libvncclient/listen.c
+            ${libvnc_sr-DIR}/libvncclient/vncviewer.c
+            ${libvnc_sr-DIR}/libvncclient/rfbproto.c
+            ${libvnc_sr-DIR}/libvncclient/sockets.c
+    )
+target_include_directories(lib-vncclient PRIVATE
+                           ${libvnc_sr-DIR}
+                           ${libvnc_sr-DIR}/common
+                           ${vncmain_include-DIR}/jpeg
+                           ${vncmain_include-DIR}/gcrypt
+                           )
 
-set(CMAKE_SHARED_LINKER_FLAGS "-Wl")
+# Searches for a specified prebuilt library and stores the path as a
+# variable. Because CMake includes system libraries in the search path by
+# default, you only need to specify the name of the public NDK library
+# you want to add. CMake verifies that the library exists before
+# completing its build.
+
+find_library( # Sets the name of the path variable.
+              log-lib
+
+              # Specifies the name of the NDK library that
+              # you want CMake to locate.
+              log )
+
+find_library( # Sets the name of the path variable.
+              z-lib
+
+              # Specifies the name of the NDK library that
+              # you want CMake to locate.
+              z )
+
 add_library(vncmain SHARED
 	       	 ${vncmain_src-DIR}/model/screen/ClientScreen.cpp
 			 ${vncmain_src-DIR}/model/comunication/HandlerRFB.cpp
@@ -126,7 +149,7 @@ add_library(vncmain SHARED
 
 target_include_directories(vncmain PRIVATE
                            ${vncmain_src-DIR}
-                           ${vncmain_include-DIR})
+                           ${libvnc_sr-DIR})
 
 
 target_link_libraries( # Specifies the target library.
@@ -142,7 +165,6 @@ target_link_libraries( # Specifies the target library.
                        lib-hogweed
                        lib-gmp
                        lib-gpg-error
-                       GLESv1_CM
-                       android
-                       log
-                       z)
+                       ${log-lib}
+                       ${z-lib}
+                       )

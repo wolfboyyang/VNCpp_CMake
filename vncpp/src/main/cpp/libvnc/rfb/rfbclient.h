@@ -31,32 +31,43 @@
  * @file rfbclient.h
  */
 
+#ifdef WIN32
+#define WIN32_LEAN_AND_MEAN /* Prevent loading any Winsock 1.x headers from windows.h */
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/time.h>
-#include <unistd.h>
+
 #include <rfb/rfbproto.h>
+
+#if LIBVNCSERVER_HAVE_SYS_TIME_H
+#include <sys/time.h>
+#endif
+#if LIBVNCSERVER_HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
 #include <rfb/keysym.h>
 
 #define rfbClientSwap16IfLE(s) \
     (*(char *)&client->endianTest ? ((((s) & 0xff) << 8) | (((s) >> 8) & 0xff)) : (s))
 
 #define rfbClientSwap32IfLE(l) \
-    (*(char *)&client->endianTest ? ((((l) & 0xff000000) >> 24) | \
-                 (((l) & 0x00ff0000) >> 8)  | \
-                 (((l) & 0x0000ff00) << 8)  | \
-                 (((l) & 0x000000ff) << 24))  : (l))
+    (*(char *)&client->endianTest ? ((((l) >> 24) & 0x000000ff) | \
+			     (((l) & 0x00ff0000) >> 8)  | \
+			     (((l) & 0x0000ff00) << 8)  | \
+			     (((l) & 0x000000ff) << 24))  : (l))
 
 #define rfbClientSwap64IfLE(l) \
-    (*(char *)&client->endianTest ? ((((l) & 0xff00000000000000ULL) >> 56) | \
-                 (((l) & 0x00ff000000000000ULL) >> 40)  | \
-                 (((l) & 0x0000ff0000000000ULL) >> 24)  | \
-                 (((l) & 0x000000ff00000000ULL) >> 8)  | \
-                 (((l) & 0x00000000ff000000ULL) << 8)  | \
-                 (((l) & 0x0000000000ff0000ULL) << 24)  | \
-                 (((l) & 0x000000000000ff00ULL) << 40)  | \
-                 (((l) & 0x00000000000000ffULL) << 56))  : (l))
+    (*(char *)&client->endianTest ? ((((l) >> 56 ) & 0x00000000000000ffULL) | \
+			     (((l) & 0x00ff000000000000ULL) >> 40)  | \
+			     (((l) & 0x0000ff0000000000ULL) >> 24)  | \
+			     (((l) & 0x000000ff00000000ULL) >> 8)  | \
+			     (((l) & 0x00000000ff000000ULL) << 8)  | \
+			     (((l) & 0x0000000000ff0000ULL) << 24)  | \
+			     (((l) & 0x000000000000ff00ULL) << 40)  | \
+			     (((l) & 0x00000000000000ffULL) << 56))  : (l))
 
 #define FLASH_PORT_OFFSET 5400
 #define LISTEN_PORT_OFFSET 5500
@@ -77,56 +88,59 @@ extern "C"
 /** vncrec */
 
 typedef struct {
-    FILE *file;
-    struct timeval tv;
-    rfbBool readTimestamp;
-    rfbBool doNotSleep;
+  FILE* file;
+  struct timeval tv;
+  rfbBool readTimestamp;
+  rfbBool doNotSleep;
 } rfbVNCRec;
 
 /** client data */
 
 typedef struct rfbClientData {
-    void *tag;
-    void *data;
-    struct rfbClientData *next;
+	void* tag;
+	void* data;
+	struct rfbClientData* next;
 } rfbClientData;
 
 /** app data (belongs into rfbClient?) */
 
 typedef struct {
-    rfbBool shareDesktop;
-    rfbBool viewOnly;
+  rfbBool shareDesktop;
+  rfbBool viewOnly;
 
-    const char *encodingsString;
+  const char* encodingsString;
 
-    rfbBool useBGR233;
-    int nColours;
-    rfbBool forceOwnCmap;
-    rfbBool forceTrueColour;
-    int requestedDepth;
+  rfbBool useBGR233;
+  int nColours;
+  rfbBool forceOwnCmap;
+  rfbBool forceTrueColour;
+  int requestedDepth;
 
-    int compressLevel;
-    int qualityLevel;
-    rfbBool enableJPEG;
-    rfbBool useRemoteCursor;
-    rfbBool palmVNC;  /**< use palmvnc specific SetScale (vs ultravnc) */
-    int scaleSetting; /**< 0 means no scale set, else 1/scaleSetting */
+  int compressLevel;
+  int qualityLevel;
+  rfbBool enableJPEG;
+  rfbBool useRemoteCursor;
+  rfbBool palmVNC;  /**< use palmvnc specific SetScale (vs ultravnc) */
+  int scaleSetting; /**< 0 means no scale set, else 1/scaleSetting */
 } AppData;
 
 /** For GetCredentialProc callback function to return */
-typedef union _rfbCredential {
-    /** X509 (VeNCrypt) */
-    struct {
-        char *x509CACertFile;
-        char *x509CACrlFile;
-        char *x509ClientCertFile;
-        char *x509ClientKeyFile;
-    } x509Credential;
-    /** Plain (VeNCrypt), MSLogon (UltraVNC) */
-    struct {
-        char *username;
-        char *password;
-    } userCredential;
+typedef union _rfbCredential
+{
+  /** X509 (VeNCrypt) */
+  struct
+  {
+    char *x509CACertFile;
+    char *x509CACrlFile;
+    char *x509ClientCertFile;
+    char *x509ClientKeyFile;
+  } x509Credential;
+  /** Plain (VeNCrypt), MSLogon (UltraVNC) */
+  struct
+  {
+    char *username;
+    char *password;
+  } userCredential;
 } rfbCredential;
 
 #define rfbCredentialTypeX509 1
@@ -144,7 +158,7 @@ struct _rfbClient;
  * rfbTextChatClose, rfbTextChatFinished if text == NULL
  * @param text The text message from the server
  */
-typedef void (*HandleTextChatProc)(struct _rfbClient *client, int value, char *text);
+typedef void (*HandleTextChatProc)(struct _rfbClient* client, int value, char *text);
 /**
  * Handles XVP server messages. If your application sends XVP messages to the
  * server, you'll want to handle the server's XVP_FAIL and XVP_INIT responses.
@@ -154,219 +168,237 @@ typedef void (*HandleTextChatProc)(struct _rfbClient *client, int value, char *t
  * @param version The highest XVP extension version that the server supports
  * @param opcode The opcode. 0 is XVP_FAIL, 1 is XVP_INIT
  */
-typedef void (*HandleXvpMsgProc)(struct _rfbClient *client, uint8_t version, uint8_t opcode);
-typedef void (*HandleKeyboardLedStateProc)(struct _rfbClient *client, int value, int pad);
-typedef rfbBool (*HandleCursorPosProc)(struct _rfbClient *client, int x, int y);
-typedef void (*SoftCursorLockAreaProc)(struct _rfbClient *client, int x, int y, int w, int h);
-typedef void (*SoftCursorUnlockScreenProc)(struct _rfbClient *client);
-typedef void (*GotFrameBufferUpdateProc)(struct _rfbClient *client, int x, int y, int w, int h);
-typedef void (*FinishedFrameBufferUpdateProc)(struct _rfbClient *client);
-typedef char *(*GetPasswordProc)(struct _rfbClient *client);
-typedef rfbCredential *(*GetCredentialProc)(struct _rfbClient *client, int credentialType);
-typedef rfbBool (*MallocFrameBufferProc)(struct _rfbClient *client);
-typedef void (*GotXCutTextProc)(struct _rfbClient *client, const char *text, int textlen);
-typedef void (*BellProc)(struct _rfbClient *client);
-
-typedef void (*GotCursorShapeProc)(struct _rfbClient *client, int xhot, int yhot, int width,
-                                   int height, int bytesPerPixel);
-typedef void (*GotCopyRectProc)(struct _rfbClient *client, int src_x, int src_y, int w, int h,
-                                int dest_x, int dest_y);
+typedef void (*HandleXvpMsgProc)(struct _rfbClient* client, uint8_t version, uint8_t opcode);
+typedef void (*HandleKeyboardLedStateProc)(struct _rfbClient* client, int value, int pad);
+typedef rfbBool (*HandleCursorPosProc)(struct _rfbClient* client, int x, int y);
+typedef void (*SoftCursorLockAreaProc)(struct _rfbClient* client, int x, int y, int w, int h);
+typedef void (*SoftCursorUnlockScreenProc)(struct _rfbClient* client);
+typedef void (*GotFrameBufferUpdateProc)(struct _rfbClient* client, int x, int y, int w, int h);
+typedef void (*FinishedFrameBufferUpdateProc)(struct _rfbClient* client);
+typedef char* (*GetPasswordProc)(struct _rfbClient* client);
+typedef rfbCredential* (*GetCredentialProc)(struct _rfbClient* client, int credentialType);
+typedef rfbBool (*MallocFrameBufferProc)(struct _rfbClient* client);
+typedef void (*GotXCutTextProc)(struct _rfbClient* client, const char *text, int textlen);
+typedef void (*BellProc)(struct _rfbClient* client);
+/**
+    Called when a cursor shape update was received from the server. The decoded cursor shape
+    will be in client->rcSource. It's up to the application to do something with this, e.g. draw
+    into a viewer's window. If you want the server to draw the cursor into the framebuffer, be
+    careful not to announce remote cursor support, i.e. not include rfbEncodingXCursor or
+    rfbEncodingRichCursor in SetFormatAndEncodings().
+*/
+typedef void (*GotCursorShapeProc)(struct _rfbClient* client, int xhot, int yhot, int width, int height, int bytesPerPixel);
+typedef void (*GotCopyRectProc)(struct _rfbClient* client, int src_x, int src_y, int w, int h, int dest_x, int dest_y);
+typedef rfbBool (*LockWriteToTLSProc)(struct _rfbClient* client);
+typedef rfbBool (*UnlockWriteToTLSProc)(struct _rfbClient* client);
 
 typedef struct _rfbClient {
-    uint8_t *frameBuffer;
-    int width, height;
+	uint8_t* frameBuffer;
+	int width, height;
 
-    int endianTest;
+	int endianTest;
 
-    AppData appData;
+	AppData appData;
 
-    const char *programName;
-    char *serverHost;
-    int serverPort; /**< if -1, then use file recorded by vncrec */
-    rfbBool listenSpecified;
-    int listenPort, flashPort;
+	const char* programName;
+	char* serverHost;
+	int serverPort; /**< if -1, then use file recorded by vncrec */
+	rfbBool listenSpecified;
+	int listenPort, flashPort;
 
-    struct {
-        int x, y, w, h;
-    } updateRect;
+	struct {
+		int x, y, w, h;
+	} updateRect;
 
-    /** Note that the CoRRE encoding uses this buffer and assumes it is big enough
-       to hold 255 * 255 * 32 bits -> 260100 bytes.  640*480 = 307200 bytes.
-       Hextile also assumes it is big enough to hold 16 * 16 * 32 bits.
-       Tight encoding assumes BUFFER_SIZE is at least 16384 bytes. */
+	/** Note that the CoRRE encoding uses this buffer and assumes it is big enough
+	   to hold 255 * 255 * 32 bits -> 260100 bytes.  640*480 = 307200 bytes.
+	   Hextile also assumes it is big enough to hold 16 * 16 * 32 bits.
+	   Tight encoding assumes BUFFER_SIZE is at least 16384 bytes. */
 
 #define RFB_BUFFER_SIZE (640*480)
-    char buffer[RFB_BUFFER_SIZE];
+	char buffer[RFB_BUFFER_SIZE];
 
-    /* rfbproto.c */
+	/* rfbproto.c */
 
-    int sock;
-    rfbBool canUseCoRRE;
-    rfbBool canUseHextile;
-    char *desktopName;
-    rfbPixelFormat format;
-    rfbServerInitMsg si;
+	int sock;
+	rfbBool canUseCoRRE;
+	rfbBool canUseHextile;
+	char *desktopName;
+	rfbPixelFormat format;
+	rfbServerInitMsg si;
 
-    /* sockets.c */
+	/* sockets.c */
 #define RFB_BUF_SIZE 8192
-    char buf[RFB_BUF_SIZE];
-    char *bufoutptr;
-    int buffered;
+	char buf[RFB_BUF_SIZE];
+	char *bufoutptr;
+	int buffered;
 
-    /* The zlib encoding requires expansion/decompression/deflation of the
-       compressed data in the "buffer" above into another, result buffer.
-       However, the size of the result buffer can be determined precisely
-       based on the bitsPerPixel, height and width of the rectangle.  We
-       allocate this buffer one time to be the full size of the buffer. */
+	/* The zlib encoding requires expansion/decompression/deflation of the
+	   compressed data in the "buffer" above into another, result buffer.
+	   However, the size of the result buffer can be determined precisely
+	   based on the bitsPerPixel, height and width of the rectangle.  We
+	   allocate this buffer one time to be the full size of the buffer. */
 
-    /* Ultra Encoding uses this buffer too */
+	/* Ultra Encoding uses this buffer too */
+	
+	int ultra_buffer_size;
+	char *ultra_buffer;
 
-    int ultra_buffer_size;
-    char *ultra_buffer;
-
-    int raw_buffer_size;
-    char *raw_buffer;
+	int raw_buffer_size;
+	char *raw_buffer;
 
 #ifdef LIBVNCSERVER_HAVE_LIBZ
-    z_stream decompStream;
-    rfbBool decompStreamInited;
+	z_stream decompStream;
+	rfbBool decompStreamInited;
 #endif
 
 
 #ifdef LIBVNCSERVER_HAVE_LIBZ
-    /*
-     * Variables for the ``tight'' encoding implementation.
-     */
+	/*
+	 * Variables for the ``tight'' encoding implementation.
+	 */
 
-    /** Separate buffer for compressed data. */
+	/** Separate buffer for compressed data. */
 #define ZLIB_BUFFER_SIZE 30000
-    char zlib_buffer[ZLIB_BUFFER_SIZE];
+	char zlib_buffer[ZLIB_BUFFER_SIZE];
 
-    /* Four independent compression streams for zlib library. */
-    z_stream zlibStream[4];
-    rfbBool zlibStreamActive[4];
+	/* Four independent compression streams for zlib library. */
+	z_stream zlibStream[4];
+	rfbBool zlibStreamActive[4];
 
-    /* Filter stuff. Should be initialized by filter initialization code. */
-    rfbBool cutZeros;
-    int rectWidth, rectColors;
-    char tightPalette[256 * 4];
-    uint8_t tightPrevRow[2048 * 3 * sizeof(uint16_t)];
+	/* Filter stuff. Should be initialized by filter initialization code. */
+	rfbBool cutZeros;
+	int rectWidth, rectColors;
+	char tightPalette[256*4];
+	uint8_t tightPrevRow[2048*3*sizeof(uint16_t)];
 
 #ifdef LIBVNCSERVER_HAVE_LIBJPEG
-    /** JPEG decoder state. */
-    rfbBool jpegError;
+	/** JPEG decoder state. */
+	rfbBool jpegError;
 
-    struct jpeg_source_mgr *jpegSrcManager;
-    void *jpegBufferPtr;
-    size_t jpegBufferLen;
+	struct jpeg_source_mgr* jpegSrcManager;
+	void* jpegBufferPtr;
+	size_t jpegBufferLen;
 
 #endif
 #endif
 
 
-    /* cursor.c */
-    uint8_t *rcSource, *rcMask;
+	/* cursor.c */
+	/** Holds cursor shape data when received from server. */
+	uint8_t *rcSource, *rcMask;
 
-    /** private data pointer */
-    rfbClientData *clientData;
+	/** private data pointer */
+	rfbClientData* clientData;
 
-    rfbVNCRec *vncRec;
+	rfbVNCRec* vncRec;
 
-    /* Keyboard State support (is 'Caps Lock' set on the remote display???) */
-    int KeyboardLedStateEnabled;
-    int CurrentKeyboardLedState;
+	/* Keyboard State support (is 'Caps Lock' set on the remote display???) */
+	int KeyboardLedStateEnabled;
+	int CurrentKeyboardLedState;
 
-    int canHandleNewFBSize;
+	int canHandleNewFBSize;
 
-    /* hooks */
-    HandleTextChatProc HandleTextChat;
-    HandleKeyboardLedStateProc HandleKeyboardLedState;
-    HandleCursorPosProc HandleCursorPos;
-    SoftCursorLockAreaProc SoftCursorLockArea;
-    SoftCursorUnlockScreenProc SoftCursorUnlockScreen;
-    GotFrameBufferUpdateProc GotFrameBufferUpdate;
-    /** the pointer returned by GetPassword will be freed after use! */
-    GetPasswordProc GetPassword;
-    MallocFrameBufferProc MallocFrameBuffer;
-    GotXCutTextProc GotXCutText;
-    BellProc Bell;
+	/* hooks */
+	HandleTextChatProc         HandleTextChat;
+	HandleKeyboardLedStateProc HandleKeyboardLedState;
+	HandleCursorPosProc HandleCursorPos;
+	SoftCursorLockAreaProc SoftCursorLockArea;
+	SoftCursorUnlockScreenProc SoftCursorUnlockScreen;
+	GotFrameBufferUpdateProc GotFrameBufferUpdate;
+	/** the pointer returned by GetPassword will be freed after use! */
+	GetPasswordProc GetPassword;
+	MallocFrameBufferProc MallocFrameBuffer;
+	GotXCutTextProc GotXCutText;
+	BellProc Bell;
 
-    GotCursorShapeProc GotCursorShape;
-    GotCopyRectProc GotCopyRect;
+	GotCursorShapeProc GotCursorShape;
+	GotCopyRectProc GotCopyRect;
 
-    /** Which messages are supported by the server
-     * This is a *guess* for most servers.
-     * (If we can even detect the type of server)
-     *
-     * If the server supports the "rfbEncodingSupportedMessages"
-     * then this will be updated when the encoding is received to
-     * accurately reflect the servers capabilities.
-     */
-    rfbSupportedMessages supportedMessages;
+	/** Which messages are supported by the server
+	 * This is a *guess* for most servers.
+	 * (If we can even detect the type of server)
+	 *
+	 * If the server supports the "rfbEncodingSupportedMessages"
+	 * then this will be updated when the encoding is received to
+	 * accurately reflect the servers capabilities.
+	 */
+	rfbSupportedMessages supportedMessages;
 
-    /** negotiated protocol version */
-    int major, minor;
+	/** negotiated protocol version */
+	int major, minor;
 
-    /** The selected security types */
-    uint32_t authScheme, subAuthScheme;
+	/** The selected security types */
+	uint32_t authScheme, subAuthScheme;
 
-    /** The TLS session for Anonymous TLS and VeNCrypt */
-    void *tlsSession;
+	/** The TLS session for Anonymous TLS and VeNCrypt */
+	void* tlsSession;
 
-    /** To support security types that requires user input (except VNC password
-     * authentication), for example VeNCrypt and MSLogon, this callback function
-     * must be set before the authentication. Otherwise, it implicates that the
-     * caller application does not support it and related security types should
-     * be bypassed.
-     */
-    GetCredentialProc GetCredential;
+	/** To support security types that requires user input (except VNC password
+	 * authentication), for example VeNCrypt and MSLogon, this callback function
+	 * must be set before the authentication. Otherwise, it implicates that the
+	 * caller application does not support it and related security types should
+	 * be bypassed.
+	 */
+	GetCredentialProc GetCredential;
 
-    /** The 0-terminated security types supported by the client.
-     * Set by function SetClientAuthSchemes() */
-    uint32_t *clientAuthSchemes;
+	/** The 0-terminated security types supported by the client.
+	 * Set by function SetClientAuthSchemes() */
+	uint32_t *clientAuthSchemes;
 
-    /** When the server is a repeater, this specifies the final destination */
-    char *destHost;
-    int destPort;
+	/** When the server is a repeater, this specifies the final destination */
+	char *destHost;
+	int destPort;
 
-    /** the QoS IP DSCP for this client */
-    int QoS_DSCP;
+        /** the QoS IP DSCP for this client */
+        int QoS_DSCP;
 
-    /** hook to handle xvp server messages */
-    HandleXvpMsgProc HandleXvpMsg;
+        /** hook to handle xvp server messages */
+	HandleXvpMsgProc           HandleXvpMsg;
 
-    /* listen.c */
-    int listenSock;
+	/* listen.c */
+        int listenSock;
 
-    FinishedFrameBufferUpdateProc FinishedFrameBufferUpdate;
+	FinishedFrameBufferUpdateProc FinishedFrameBufferUpdate;
 
-    char *listenAddress;
-    /* IPv6 listen socket, address and port*/
-    int listen6Sock;
-    char *listen6Address;
-    int listen6Port;
+	char *listenAddress;
+        /* IPv6 listen socket, address and port*/
+        int listen6Sock;
+        char* listen6Address;
+        int listen6Port;
+
+        /* Output Window ID. When set, client application enables libvncclient to perform direct rendering in its window */
+        unsigned long outputWindow;
+
+	/** Hooks for optional protection WriteToTLS() by mutex */
+	LockWriteToTLSProc LockWriteToTLS;
+	UnlockWriteToTLSProc UnlockWriteToTLS;
+
 } rfbClient;
 
 /* cursor.c */
-
-extern rfbBool
-HandleCursorShape(rfbClient *client, int xhot, int yhot, int width, int height, uint32_t enc);
+/**
+ * Handles XCursor and RichCursor shape updates from the server.
+ * We emulate cursor operating on the frame buffer (that is
+ * why we call it "software cursor"). This decodes the received cursor
+ * shape and hands it over to GotCursorShapeProc, if set.
+ */
+extern rfbBool HandleCursorShape(rfbClient* client,int xhot, int yhot, int width, int height, uint32_t enc);
 
 /* listen.c */
 
-extern void listenForIncomingConnections(rfbClient *viewer);
-extern int listenForIncomingConnectionsNoFork(rfbClient *viewer, int usec_timeout);
+extern void listenForIncomingConnections(rfbClient* viewer);
+extern int listenForIncomingConnectionsNoFork(rfbClient* viewer, int usec_timeout);
 
 /* rfbproto.c */
 
 extern rfbBool rfbEnableClientLogging;
 typedef void (*rfbClientLogProc)(const char *format, ...);
-extern rfbClientLogProc rfbClientLog, rfbClientErr;
-extern rfbBool ConnectToRFBServer(rfbClient *client, const char *hostname, int port);
-extern rfbBool ConnectToRFBRepeater(rfbClient *client, const char *repeaterHost, int repeaterPort,
-                                    const char *destHost, int destPort);
-extern void SetClientAuthSchemes(rfbClient *client, const uint32_t *authSchemes, int size);
-extern rfbBool InitialiseRFBConnection(rfbClient *client);
+extern rfbClientLogProc rfbClientLog,rfbClientErr;
+extern rfbBool ConnectToRFBServer(rfbClient* client,const char *hostname, int port);
+extern rfbBool ConnectToRFBRepeater(rfbClient* client,const char *repeaterHost, int repeaterPort, const char *destHost, int destPort);
+extern void SetClientAuthSchemes(rfbClient* client,const uint32_t *authSchemes, int size);
+extern rfbBool InitialiseRFBConnection(rfbClient* client);
 /**
  * Sends format and encoding parameters to the server. Your application can
  * modify the 'client' data structure directly. However some changes to this
@@ -384,8 +416,8 @@ extern rfbBool InitialiseRFBConnection(rfbClient *client);
  * @return true if the format or encodings were sent to the server successfully,
  * false otherwise
  */
-extern rfbBool SetFormatAndEncodings(rfbClient *client);
-extern rfbBool SendIncrementalFramebufferUpdateRequest(rfbClient *client);
+extern rfbBool SetFormatAndEncodings(rfbClient* client);
+extern rfbBool SendIncrementalFramebufferUpdateRequest(rfbClient* client);
 /**
  * Sends a framebuffer update request to the server. A VNC client may request an
  * update from the server at any time. You can also specify which portions of
@@ -406,10 +438,10 @@ extern rfbBool SendIncrementalFramebufferUpdateRequest(rfbClient *client);
  * true: server only sends changed parts of rectangle.
  * @return true if the update request was sent successfully, false otherwise
  */
-extern rfbBool SendFramebufferUpdateRequest(rfbClient *client,
-                                            int x, int y, int w, int h,
-                                            rfbBool incremental);
-extern rfbBool SendScaleSetting(rfbClient *client, int scaleSetting);
+extern rfbBool SendFramebufferUpdateRequest(rfbClient* client,
+					 int x, int y, int w, int h,
+					 rfbBool incremental);
+extern rfbBool SendScaleSetting(rfbClient* client,int scaleSetting);
 /**
  * Sends a pointer event to the server. A pointer event includes a cursor
  * location and a button mask. The button mask indicates which buttons on the
@@ -430,7 +462,7 @@ extern rfbBool SendScaleSetting(rfbClient *client, int scaleSetting);
  * @param buttonMask the button mask indicating which buttons are pressed
  * @return true if the pointer event was sent successfully, false otherwise
  */
-extern rfbBool SendPointerEvent(rfbClient *client, int x, int y, int buttonMask);
+extern rfbBool SendPointerEvent(rfbClient* client,int x, int y, int buttonMask);
 /**
  * Sends a key event to the server. If your application is not merely a VNC
  * viewer (i.e. it controls the server), you'll want to send the keys that the
@@ -440,7 +472,7 @@ extern rfbBool SendPointerEvent(rfbClient *client, int x, int y, int buttonMask)
  * @param down true if this was a key down event, false otherwise
  * @return true if the key event was send successfully, false otherwise
  */
-extern rfbBool SendKeyEvent(rfbClient *client, uint32_t key, rfbBool down);
+extern rfbBool SendKeyEvent(rfbClient* client,uint32_t key, rfbBool down);
 /**
  * Places a string on the server's clipboard. Use this function if you want to
  * be able to copy and paste between the server and your application. For
@@ -453,7 +485,7 @@ extern rfbBool SendKeyEvent(rfbClient *client, uint32_t key, rfbBool down);
  * @param len The length of the string
  * @return true if the client cut message was sent successfully, false otherwise
  */
-extern rfbBool SendClientCutText(rfbClient *client, char *str, int len);
+extern rfbBool SendClientCutText(rfbClient* client,char *str, int len);
 /**
  * Handles messages from the RFB server. You must call this function
  * intermittently so LibVNCClient can parse messages from the server. For
@@ -464,7 +496,7 @@ extern rfbBool SendClientCutText(rfbClient *client, char *str, int len);
  * @return true if the client was able to handle the RFB server messages, false
  * otherwise
  */
-extern rfbBool HandleRFBServerMessage(rfbClient *client);
+extern rfbBool HandleRFBServerMessage(rfbClient* client);
 
 /**
  * Sends a text chat message to the server.
@@ -472,27 +504,27 @@ extern rfbBool HandleRFBServerMessage(rfbClient *client);
  * @param text The text to send
  * @return true if the text was sent successfully, false otherwise
  */
-extern rfbBool TextChatSend(rfbClient *client, char *text);
+extern rfbBool TextChatSend(rfbClient* client, char *text);
 /**
  * Opens a text chat window on the server.
  * @param client The client through which to send the message
  * @return true if the window was opened successfully, false otherwise
  */
-extern rfbBool TextChatOpen(rfbClient *client);
+extern rfbBool TextChatOpen(rfbClient* client);
 /**
  * Closes the text chat window on the server.
  * @param client The client through which to send the message
  * @return true if the window was closed successfully, false otherwise
  */
-extern rfbBool TextChatClose(rfbClient *client);
-extern rfbBool TextChatFinish(rfbClient *client);
-extern rfbBool PermitServerInput(rfbClient *client, int enabled);
-extern rfbBool SendXvpMsg(rfbClient *client, uint8_t version, uint8_t code);
+extern rfbBool TextChatClose(rfbClient* client);
+extern rfbBool TextChatFinish(rfbClient* client);
+extern rfbBool PermitServerInput(rfbClient* client, int enabled);
+extern rfbBool SendXvpMsg(rfbClient* client, uint8_t version, uint8_t code);
 
 extern void PrintPixelFormat(rfbPixelFormat *format);
 
-extern rfbBool SupportsClient2Server(rfbClient *client, int messageType);
-extern rfbBool SupportsServer2Client(rfbClient *client, int messageType);
+extern rfbBool SupportsClient2Server(rfbClient* client, int messageType);
+extern rfbBool SupportsServer2Client(rfbClient* client, int messageType);
 
 /* client data */
 
@@ -509,7 +541,7 @@ extern rfbBool SupportsServer2Client(rfbClient *client, int messageType);
  * @param tag A unique tag which identifies the data
  * @param data A pointer to the data to associate with the tag
  */
-void rfbClientSetClientData(rfbClient *client, void *tag, void *data);
+void rfbClientSetClientData(rfbClient* client, void* tag, void* data);
 /**
  * Returns a pointer to the client data associated with the given tag. See the
  * the documentation for rfbClientSetClientData() for a discussion of how you
@@ -518,32 +550,29 @@ void rfbClientSetClientData(rfbClient *client, void *tag, void *data);
  * @param tag The tag which identifies the client data
  * @return a pointer to the client data
  */
-void *rfbClientGetClientData(rfbClient *client, void *tag);
+void* rfbClientGetClientData(rfbClient* client, void* tag);
 
 /* protocol extensions */
 
 typedef struct _rfbClientProtocolExtension {
-    int *encodings;
-
-    /** returns TRUE if the encoding was handled */
-    rfbBool (*handleEncoding)(rfbClient *cl,
-                              rfbFramebufferUpdateRectHeader *rect);
-
-    /** returns TRUE if it handled the message */
-    rfbBool (*handleMessage)(rfbClient *cl,
-                             rfbServerToClientMsg *message);
-
-    struct _rfbClientProtocolExtension *next;
+	int* encodings;
+	/** returns TRUE if the encoding was handled */
+	rfbBool (*handleEncoding)(rfbClient* cl,
+		rfbFramebufferUpdateRectHeader* rect);
+	/** returns TRUE if it handled the message */
+	rfbBool (*handleMessage)(rfbClient* cl,
+		 rfbServerToClientMsg* message);
+	struct _rfbClientProtocolExtension* next;
 } rfbClientProtocolExtension;
 
-void rfbClientRegisterExtension(rfbClientProtocolExtension *e);
+void rfbClientRegisterExtension(rfbClientProtocolExtension* e);
 
 /* sockets.c */
 
 extern rfbBool errorMessageOnReadFailure;
 
-extern rfbBool ReadFromRFBServer(rfbClient *client, char *out, unsigned int n);
-extern rfbBool WriteToRFBServer(rfbClient *client, char *buf, int n);
+extern rfbBool ReadFromRFBServer(rfbClient* client, char *out, unsigned int n);
+extern rfbBool WriteToRFBServer(rfbClient* client, char *buf, int n);
 extern int FindFreeTcpPort(void);
 extern int ListenAtTcpPort(int port);
 extern int ListenAtTcpPortAndAddress(int port, const char *address);
@@ -566,7 +595,7 @@ extern rfbBool SameMachine(int sock);
  * @param usecs The timeout in microseconds
  * @return the return value of the underlying select() call
  */
-extern int WaitForMessage(rfbClient *client, unsigned int usecs);
+extern int WaitForMessage(rfbClient* client,unsigned int usecs);
 
 /* vncviewer.c */
 /**
@@ -593,7 +622,7 @@ extern int WaitForMessage(rfbClient *client, unsigned int usecs);
  * @param bytesPerPixel The number of bytes in a pixel
  * @return a pointer to the allocated rfbClient structure
  */
-rfbClient *rfbGetClient(int bitsPerSample, int samplesPerPixel, int bytesPerPixel);
+rfbClient* rfbGetClient(int bitsPerSample,int samplesPerPixel,int bytesPerPixel);
 /**
  * Initializes the client. The format is {PROGRAM_NAME, [OPTIONS]..., HOST}. This
  * function does not initialize the program name if the rfbClient's program
@@ -625,7 +654,7 @@ rfbClient *rfbGetClient(int bitsPerSample, int samplesPerPixel, int bytesPerPixe
  * strings
  * @return true if the client was initialized successfully, false otherwise.
  */
-rfbBool rfbInitClient(rfbClient *client, int *argc, char **argv);
+rfbBool rfbInitClient(rfbClient* client,int* argc,char** argv);
 /**
  * Cleans up the client structure and releases the memory allocated for it. You
  * should call this when you're done with the rfbClient structure that you
@@ -633,7 +662,7 @@ rfbBool rfbInitClient(rfbClient *client, int *argc, char **argv);
  * @note rfbClientCleanup() does not touch client->frameBuffer.
  * @param client The client to clean up
  */
-void rfbClientCleanup(rfbClient *client);
+void rfbClientCleanup(rfbClient* client);
 
 #if(defined __cplusplus)
 }
